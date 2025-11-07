@@ -5,55 +5,48 @@
       <p>총 {{ totalItems }}개의 아이템 중 {{ items.length }}개 로드됨</p>
     </div>
 
-    <InfiniteScrollList
-      :items="items"
-      :loading="loading"
-      :has-more="hasMore"
-      @load-more="loadMore"
-    >
-      <!-- 아이템 렌더링 슬롯 -->
-      <template #items="{ items: listItems }">
-        <div class="items-grid">
-          <div
-            v-for="item in listItems"
-            :key="item.id"
-            class="item-card"
-          >
-            <div class="item-image">
-              <img :src="item.image" :alt="item.title" />
-            </div>
-            <div class="item-content">
-              <h3>{{ item.title }}</h3>
-              <p>{{ item.description }}</p>
-              <div class="item-meta">
-                <span class="price">{{ item.price.toLocaleString() }}원</span>
-                <span class="category">{{ item.category }}</span>
-              </div>
-            </div>
+    <!-- 아이템 그리드 -->
+    <div class="items-grid">
+      <div
+        v-for="item in items"
+        :key="item.id"
+        class="item-card"
+      >
+        <div class="item-image">
+          <img :src="item.image" :alt="item.title" />
+        </div>
+        <div class="item-content">
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.description }}</p>
+          <div class="item-meta">
+            <span class="price">{{ item.price.toLocaleString() }}원</span>
+            <span class="category">{{ item.category }}</span>
           </div>
         </div>
-      </template>
+      </div>
+    </div>
 
-      <!-- 커스텀 로딩 메시지 (선택적) -->
-      <template #loading>
-        <div class="custom-loading">
-          <p>더 많은 상품을 불러오는 중...</p>
-        </div>
-      </template>
+    <!-- 로딩 메시지 -->
+    <div v-if="loading && hasMore" class="loading-message">
+      <p>더 많은 상품을 불러오는 중...</p>
+    </div>
 
-      <!-- 커스텀 끝 메시지 (선택적) -->
-      <template #end>
-        <div class="custom-end">
-          <p>✨ 모든 상품을 확인하셨습니다! ✨</p>
-        </div>
-      </template>
-    </InfiniteScrollList>
+    <!-- Intersection Observer -->
+    <InfiniteScrollObserver
+      :disabled="!hasMore || loading"
+      @intersect="loadMore"
+    />
+
+    <!-- 마지막 페이지 메시지 -->
+    <div v-if="!hasMore" class="end-message">
+      <p>✨ 모든 상품을 확인하셨습니다! ✨</p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { InfiniteScrollList } from '@tempmono/ui'
+import { InfiniteScrollObserver } from '@tempmono/ui'
 
 // 목업 데이터 타입
 interface MockItem {
@@ -217,15 +210,15 @@ loadMore()
   color: #666;
 }
 
-.custom-loading,
-.custom-end {
+.loading-message,
+.end-message {
   text-align: center;
   padding: 2rem;
   font-size: 1rem;
   color: #666;
 }
 
-.custom-end {
+.end-message {
   color: #3498db;
   font-weight: 500;
 }
